@@ -1,0 +1,3 @@
+[submodule "pkgs/smile"]
+	path = pkgs/smile
+	url = git@github.com:LukasPietzschmann/smile.git

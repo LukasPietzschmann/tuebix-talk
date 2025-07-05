@@ -1,0 +1,186 @@
+\ProvidesPackage{beamerthemetuebix}[]
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\RequirePackage{kvoptions}
+\SetupKeyvalOptions{family=up,prefix=up@}
+
+\DeclareBoolOption[true]{english}
+\DeclareComplementaryOption{german}{english}
+
+\DeclareDefaultOption{\PassOptionsToPackage{\CurrentOption}{smile}}
+
+\ProcessKeyvalOptions*
+
+\ifup@english\RequirePackage[english]{babel}\else\RequirePackage[ngerman]{babel}\fi
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\RequirePackage{calc}
+\RequirePackage{microtype}
+\RequirePackage{etoolbox}
+\RequirePackage[
+	tikz,
+	hyperref,
+	pdftitle={\noexpand\inserttitle},
+	pdfauthor={\noexpand\insertauthor},
+	pdfsubject={\noexpand\inserttitle},
+	coloraccent=yellow
+]{smile}
+
+\usetikzlibrary{overlay-beamer-styles,decorations.markings}
+\tikzset{
+	node distance=5mm,
+	invisible/.style={opacity=0},
+	muted/.style={opacity=0.3},
+	visible on/.style={alt={#1{}{invisible}}},
+	hidden on/.style={alt={#1{invisible}{}}},
+	muted on/.style={alt={#1{muted}{}}},
+	unmuted on/.style={alt={#1{}{muted}}},
+	alt/.code args={<#1>#2#3}{%
+		\alt<#1>{\pgfkeysalso{#2}}{\pgfkeysalso{#3}}
+	},
+	ffill/.style n args={3}{path picture={
+		\fill[#1] (path picture bounding box.south west) rectangle ($(path picture bounding box.north west)!#2/#3!(path picture bounding box.north east)$);
+	}}
+}
+
+\usetikzlibrary{tikzmark}
+\def\m#1{\tikzmark{#1}}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\newcounter{allframes}
+\def\stepframe{%
+	\ifbeamer@isfragile%
+		\stepcounter{allframes}%
+	\else%
+		\ifbeamer@noframenumbering\else%
+			\stepcounter{allframes}%
+		\fi%
+	\fi%
+	\ifnum\theallframes=0\setcounter{allframes}{1}\fi%
+}
+
+\BeforeBeginEnvironment{frame}{\stepframe}
+\pretocmd\againframe{\stepframe}{}{}
+
+\def\refreshcountsinaux{%
+	\immediate\write\@auxout{\global\noexpand\@namedef{s@totalframes}{\theallframes}}%
+}
+
+\AtEndDocument{\refreshcountsinaux}
+
+\def\totalframes{%
+	\ifcsdef{s@totalframes}{%
+		\csname s@totalframes\endcsname%
+	}{1}%
+}
+
+
+\def\ps@navigation@titlepage{\setbeamertemplate{footline}{}\@nameuse{ps@navigation}}
+
+\setbeamertemplate{footline}{
+	\begin{tikzpicture}[o]
+		\node[roundednode,rounded corners=.5mm,fill=darkgray!40!black,draw=none,minimum width=\dimexpr\textwidth-1cm\relax,anchor=south,ffill={accent!40!black}{\theallframes}{\totalframes},yshift=2mm] at (current page.south) {};
+	\end{tikzpicture}
+}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\def\maketitle{
+	\begin{frame}[noframenumbering,plain]
+		\titlepage
+	\end{frame}
+}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\setbeamercolor{normal text}{fg=white}
+\setbeamercolor{background canvas}{bg=black}
+\setbeamercolor{alerted text}{fg=accent}
+\setbeamercolor{title}{fg=accent}
+\setbeamercolor{frametitle}{fg=accent}
+\setbeamercolor{itemize item}{fg=blue}
+\setbeamercolor{itemize subitem}{fg=blue}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\setbeamerfont{title}{
+	size=\Huge,
+	shape=\bfseries\scshape
+}
+\setbeamerfont{subtitle}{
+	size=\large,
+	shape=\normalfont
+}
+\setbeamerfont{author}{
+	size=\normalsize,
+	shape=\normalfont
+}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\newlength\up@textmargin\setlength{\up@textmargin}{0.05\paperwidth}
+\setbeamersize{text margin left=\up@textmargin}
+\setbeamersize{text margin right=\up@textmargin}
+
+\setbeamertemplate{caption}{\insertcaption}
+\setbeamertemplate{blocks}[rounded][shadow=false]
+\setbeamertemplate{itemize item}[circle]
+\setbeamertemplate{itemize subitem}[circle]
+
+\addtobeamertemplate{frametitle continuation}{\color{gray}(}{)}
+\setbeamertemplate{navigation symbols}{}
+\setbeamertemplate{headline}{}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\ensureinfocommand{title}
+\ensureinfocommand{author}
+\def\inserttitle{\ifdefined\@title\@title\fi}
+\def\insertauthor{\ifdefined\@author\@author\fi}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\AtEndDocument{
+	{\setbeamercolor{background canvas}{bg=accent!20!black}
+	\begin{frame}[b,noframenumbering]%
+		\thispagestyle{navigation@titlepage}%
+		\begin{center}
+			\LARGE By the way, there are \textcolor{accent}{\num{13}} commit hashes starting with
+			\textcolor{accent}{420\kern2pt69}~\emoji{wink}
+		\end{center}\vfill
+		\color{white}\Large\textbf{\bubbly\insertauthor}\vskip0.5em\scriptsize Tübix,~\insertdate\hfill\par\bigskip%
+	\end{frame}}
+}
+
+\tikzset{ul/.style={#1,opacity=0.55,rounded corners=.17ex}}
+\newcommand\ul[5][0pt]{\begin{tikzpicture}[o]
+	\coordinate(#5_west) at ([yshift=#1-0.2ex]pic cs:#3);
+	\coordinate(#5_east) at ([yshift=#1+0.4ex]pic cs:#4);
+	\fill[ul=#2] (#5_west) rectangle node(#5){} (#5_east);
+\end{tikzpicture}}
